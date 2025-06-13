@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "OT Skills Mobile",
+    "slug": "ot-skills-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.otskills.mobile",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses camera for capturing images",
+        "NSMicrophoneUsageDescription": "This app uses microphone for audio features"
+      }
+    },
+    "android": {
+      "package": "com.otskills.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "ot-skills-mobile",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b4f7f2d8-6614-4462-be18-a2d55bb43477"
+      }
+    }
+  }
+}
