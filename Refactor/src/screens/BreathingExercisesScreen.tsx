@@ -56,7 +56,7 @@ export default function BreathingExercisesScreen() {
         toValue: -300, // Move upwards
         duration: 6000, // Animation duration
         useNativeDriver: true,
-      }),
+      }),  
       Animated.timing(newBubble.opacity, { toValue: 0, duration: 5000, useNativeDriver: true, delay: 1000 }), // Fade out
     ]).start(() => { setBubbles(prevBubbles => prevBubbles.filter(bubble => bubble.id !== newBubble.id)); }); // Remove bubble after animation
   };
@@ -97,7 +97,7 @@ export default function BreathingExercisesScreen() {
              nextTime = 4;
            }
         } else { // selectedTechnique === 'bubble' (simplified for now)
-           if (phase === 'exhale' && isActive) addBubble(); // Generate bubble on exhale
+ if (phase === 'exhale' && isActive) addBubble(); // Generate bubble on exhale
           if (phase === 'inhale') {
             nextPhase = 'exhale';
             nextTime = 6; // Longer exhale for bubble
@@ -166,7 +166,13 @@ export default function BreathingExercisesScreen() {
          // Implement bubble animation logic here (more complex, might need a separate component)
          // For now, maybe a subtle pulsing or just instructions
       }
-    } else { // Reset animation when not active
+    } else { // Reset animation when not active  
+      Animated.timing(scaleValue, {  
+        toValue: 1,  
+        duration: 0,  
+        useNativeDriver: true,  
+      }).start();
+
       scaleValue.setValue(1);
     }
   }, [phase, isActive, selectedTechnique]); // Added selectedTechnique to dependencies
@@ -176,7 +182,7 @@ export default function BreathingExercisesScreen() {
     setIsActive(true);
     // Initialize phase and time based on the selected technique
     if (selectedTechnique === 'box') {
- setSelectedPhase('inhale');
+      setPhase('inhale');
  setTimeLeft(4);
     } else if (selectedTechnique === '478') {
       setPhase('inhale');
@@ -190,7 +196,7 @@ export default function BreathingExercisesScreen() {
   const stopExercise = () => {
     setIsActive(false);
     setPhase('inhale');
-    setTimeLeft(selectedTechnique === 'box' || selectedTechnique === '478' ? 4 : 4); // Reset time based on technique start
+    setTimeLeft(selectedTechnique === 'box' || selectedTechnique === '478' ? 4 : 4); // Reset time based on technique start  
     scaleValue.setValue(1); // Reset animation
   };
 
