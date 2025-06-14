@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Title, Paragraph, Button, Chip } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import YogaSequence from '../components/YogaSequence';
 
 export default function YogaZoneScreen() {
   const poses = [
@@ -46,6 +46,16 @@ export default function YogaZoneScreen() {
                 <Paragraph style={styles.benefitText}>Reduces stress and anxiety</Paragraph>
               </View>
             </View>
+          </Card.Content>
+        </Card>
+
+        <Card style={{ marginVertical: 24 }}>
+          <Card.Content>
+            <Title>Yoga for Calm & Stress-Free Mind</Title>
+            <Paragraph>
+              Follow along with visual pose cards, calming voiceovers, and soothing music. Try a 3-5 minute sequence for relaxation!
+            </Paragraph>
+            <YogaSequence />
           </Card.Content>
         </Card>
 

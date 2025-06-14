@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
@@ -38,6 +37,19 @@ export default function CalmCornerScreen() {
       </View>
 
       <View style={styles.content}>
+        {/* Calm Down Tools for Emotional Regulation */}
+        <Card style={{ marginBottom: 24 }}>
+          <Card.Content>
+            <Title>Calm Down Tools</Title>
+            <Paragraph>Try these strategies if you feel upset or overwhelmed:</Paragraph>
+            <View style={{ marginTop: 12 }}>
+              {/* Import and use the CalmDownTools component */}
+              {/* @ts-ignore */}
+              {require('../components/CalmDownTools').default()}
+            </View>
+          </Card.Content>
+        </Card>
+
         <Card style={styles.soundsCard}>
           <Card.Content>
             <Title style={styles.sectionTitle}>Calming Sounds</Title>

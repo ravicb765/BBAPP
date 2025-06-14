@@ -1,8 +1,7 @@
-
 import React, { useContext, useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Platform, Pressable, LayoutAnimation, UIManager, SectionList, TextStyle, ViewStyle } from 'react-native';
 import { RenderItemParams } from 'react-native-draggable-flatlist'; // Keep import if you plan to re-integrate draggable later
-import ScheduleItem from '@Refactor/components/ScheduleItem'; // Import the ScheduleItem component
+import ScheduleItem from '../components/ScheduleItem'; // Import the ScheduleItem component
 import { ScheduleItem as ScheduleItemType,  } from '../types/ScheduleTypes'; // Import the ScheduleItem interface
 import { ScheduleContext } from '../context/ScheduleContext'; // Import ScheduleContext
 import HapticFeedback from 'react-native-haptic-feedback';
@@ -28,15 +27,16 @@ export default function VisualSchedulerScreen() {
     return () => clearInterval(timer); // Clean up the interval on unmount
   }, []);
 
- const handleToggleComplete = (item: ScheduleItemType) => {
- LayoutAnimation.configureNext({
- duration: 300, // Adjust duration as needed
- update: { type: LayoutAnimation.Types.easeInEaseOut, property: LayoutAnimation.Properties.translateX },
+  const handleToggleComplete = (item: ScheduleItemType) => {
+    LayoutAnimation.configureNext({
+      duration: 300, // Adjust duration as needed
+      update: { type: LayoutAnimation.Types.easeInEaseOut },
+    });
     const updatedItem = {
- ...item,
+      ...item,
       isCompleted: !item.isCompleted,
     };
- editScheduleItem(updatedItem);
+    editScheduleItem(updatedItem);
   };
 
   // Helper function to parse HH:mm time string into a Date object for today
@@ -68,22 +68,21 @@ export default function VisualSchedulerScreen() {
     // }, [item.isCompleted]);
 
     return (
- <View style={[
- styles.scheduleItemContainer,
- isCurrentActivity && styles.currentActivityHighlight, // Apply highlight style when current// Pass scheduleItem and isCompleted
- >
- {/* ScheduleItem component handles its own styling and completion animation */}
- <Pressable
- onPress={() => handleToggleComplete(item)}
- onLongPress={() => { HapticFeedback.trigger(HapticFeedbackTypes.Vibration); drag(); }}
- // The drag handle is the entire item container now due to Pressable wrapping
- // If you need a specific drag handle, you'd wrap that element with `drag()`
- style={styles.scheduleItemContent} // Style for the content inside the Pressable
- >{/* Pass scheduleItem and isCompleted*/}
-      <ScheduleItem scheduleItem={item} isCompleted={item.isCompleted} /> {/* Pass scheduleItem and isCompleted */}
-    </Pressable>
- </View>
- );
+      <View
+        style={[
+          styles.scheduleItemContainer,
+          isCurrentActivity ? styles.currentActivityHighlight : null,
+        ]}
+      >
+        {/* ScheduleItem component handles its own styling and completion animation */}
+        <Pressable
+          onPress={() => handleToggleComplete(item)}
+          style={styles.scheduleItemContent}
+        >
+          <ScheduleItem scheduleItem={item} isCompleted={item.isCompleted} />
+        </Pressable>
+      </View>
+    );
   };
 
   // Group schedule items by time of day
@@ -129,12 +128,15 @@ export default function VisualSchedulerScreen() {
     </View>
   );
 
- // Ensure data is an array before passing to DraggableFlatList
- // This check is less critical for SectionList but good practice, though SectionList expects sections data
+ // Ensure data is an array before passing to SectionList
  if (!Array.isArray(schedule)) {
-    console.error("Schedule data is not an array:", schedule);
- return <Text>Error loading schedule data.</Text>; // Or a loading indicator
-  }
+  console.error("Schedule data is not an array:", schedule);
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Error loading schedule data.</Text>
+    </View>
+  );
+ }
 
    // Calculate time-based progress percentage
   const calculateTimeBasedProgress = (schedule: ScheduleItemType[], currentTime: Date): number => {
