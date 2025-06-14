@@ -5,8 +5,8 @@ npm install
 
 Write-Host "Building Android app (APK and AAB)..."
 Set-Location android
-./gradlew assembleRelease
-./gradlew bundleRelease
+.\gradlew.bat assembleRelease
+.\gradlew.bat bundleRelease
 Set-Location ..
 
 Write-Host "Android build complete! APK: android/app/build/outputs/apk/release/app-release.apk, AAB: android/app/build/outputs/bundle/release/app-release.aab"
