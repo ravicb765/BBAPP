@@ -1,0 +1,465 @@
+import React, { useState, useContext, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  FlatList,
+  Platform,
+  LayoutAnimation,
+  UIManager,
+  ScrollView,
+} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AppButton from '../components/AppButton';
+import { ScheduleContext } from '../context/ScheduleContext';
+import { ScheduleItem } from '../types/ScheduleTypes';
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Replace with your icon library import
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+
+const COLORS = [
+  '#FF6347', // Tomato
+  '#FFD700', // Gold
+  '#98FB98', // PaleGreen
+  '#4682B4', // SteelBlue
+  '#EE82EE', // Violet
+  '#FFA07A', // LightSalmon
+];
+
+// Define a list of relevant icon names from your icon library
+const ICONS = [
+  'access-alarm',
+  'apple',
+  'book',
+  'brush',
+  'directions-bus',
+  'fastfood',
+  'fitness-center',
+  'gamepad',
+  'home',
+  'hotel',
+  'library-books',
+  'local-dining',
+  'nights-stay', // Corrected 'Nights-stay'
+  'school',
+  'sports-soccer',
+];
+
+
+const ScheduleManagementScreen: React.FC = () => {
+  const { schedule, addScheduleItem, editScheduleItem, deleteScheduleItem } =
+    useContext(ScheduleContext);
+
+  const [time, setTime] = useState(new Date()); // Manage time as Date object for picker
+  const [activity, setActivity] = useState('');
+  const [icon, setIcon] = useState('');
+  const [color, setColor] = useState('');
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [isTimePickerVisible, setIsTimePickerVisible] = useState(false);
+  const [errors, setErrors] = useState<{
+    activity?: string;
+    time?: string;
+    icon?: string;
+    color?: string;
+  }>({});
+
+  useEffect(() => {
+    // Add animation when editingItemId changes (optional)
+    LayoutAnimation.easeInEaseOut();
+  }, [editingItemId]);
+
+
+  const validateForm = () => {
+    const newErrors: {
+      activity?: string;
+      time?: string;
+      icon?: string;
+      color?: string;
+    } = {};
+
+    // Activity validation
+    if (!activity.trim()) {
+      newErrors.activity = 'Activity is required';
+    }
+
+    // Time validation
+    // Basic check if time is a valid Date object (from picker)
+    if (!(time instanceof Date) || isNaN(time.getTime())) {
+       newErrors.time = 'Valid time is required';
+    } else {
+        // Optional: More specific time format validation if needed
+        const hours = time.getHours();
+        const minutes = time.getMinutes();
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+             newErrors.time = 'Invalid time value';
+        }
+    }
+
+
+    // Icon validation (basic)
+    if (!icon.trim()) {
+      newErrors.icon = 'Icon is required';
+    } else if (!ICONS.includes(icon.trim())) {
+         newErrors.icon = 'Invalid icon name';
+    }
+
+
+    // Color validation (basic)
+    if (!color.trim()) {
+      newErrors.color = 'Color is required';
+    } else {
+        // Optional: More specific hex color validation if needed
+         const hexColorRegex = /^#([0-9A-F]{3}){1,2}$/i;
+         if (!hexColorRegex.test(color)) {
+              newErrors.color = 'Invalid color format (e.g., #RRGGBB)';
+         }
+    }
+
+
+    return newErrors;
+  };
+
+  const clearForm = () => {
+    setTime(new Date()); // Reset time to current time or a default
+    setActivity('');
+    setIcon('');
+    setColor('');
+    setErrors({}); // Clear validation errors
+  };
+
+  const handleAddItem = () => {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({}); // Clear errors if validation passes
+
+
+    const newItem: ScheduleItem = {
+      id: Date.now().toString(), // Simple unique ID
+      time: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`, // Format time as HH:mm
+      activity,
+      icon,
+      color,
+      isCompleted: false,
+    };
+    addScheduleItem(newItem);
+    clearForm();
+  };
+
+  const handleEdit = (item: ScheduleItem) => {
+    setEditingItemId(item.id);
+    // Parse time string back to Date object for the picker
+    const [hours, minutes] = item.time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    date.setSeconds(0);
+    setTime(date);
+    setActivity(item.activity);
+    setIcon(item.icon || '');
+    setColor(item.color || '');
+    setErrors({}); // Clear errors when starting edit
+  };
+
+  const handleSaveItem = () => {
+    if (!editingItemId) return; // Should not happen if button is correct
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({}); // Clear errors if validation passes
+
+
+    const updatedItem: ScheduleItem = {
+      id: editingItemId,
+      time: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`, // Format time as HH:mm
+      activity,
+      icon,
+      color,
+      isCompleted:
+        schedule.find((item) => item.id === editingItemId)?.isCompleted || false, // Keep existing completion status
+    };
+    editScheduleItem(updatedItem);
+    setEditingItemId(null);
+    clearForm();
+  };
+
+  const handleDelete = (id: string) => {
+    // In a real app, add a confirmation dialog here
+    deleteScheduleItem(id);
+    if (editingItemId === id) {
+        setEditingItemId(null);
+        clearForm();
+    }
+  };
+
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || time;
+    setIsTimePickerVisible(Platform.OS === 'ios'); // Hide picker on Android after selection
+    if (event.type === 'set') { // Only update if user confirmed selection
+        setTime(currentDate);
+    }
+  };
+
+
+  const renderScheduleItem = ({ item }: { item: ScheduleItem }) => (
+    <View style={styles.scheduleItem}>
+      <View style={styles.itemInfo}>
+        <Text>{item.time}</Text>
+        <Text style={{ color: item.color || '#000' }}>{item.activity}</Text>
+         {item.icon ? <Icon name={item.icon} size={20} color="#333" /> : null}
+      </View>
+      <View style={styles.itemActions}>
+        <Pressable
+          style={styles.actionButton}
+          onPress={() => handleEdit(item)}
+        >
+          <Text style={styles.actionButtonText}>Edit</Text>
+        </Pressable>
+        <Pressable
+          style={styles.actionButton}
+          onPress={() => handleDelete(item.id)}
+        >
+          <Text style={styles.actionButtonText}>Delete</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.heading}>Schedule Management</Text>
+
+      <View style={styles.form}>
+        <View style={styles.formField}>
+            <Text style={styles.label}>Time:</Text>
+             <Pressable onPress={() => setIsTimePickerVisible(true)} style={styles.timeInputButton}>
+                 <Text>{`${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`}</Text>
+             </Pressable>
+             {isTimePickerVisible && (
+                <DateTimePicker
+                  testID="timePicker"
+                  value={time}
+                  mode="time"
+                  is24Hour={true}
+                  display="default"
+                  onChange={onTimeChange}
+                />
+              )}
+             {errors.time ? <Text style={styles.errorText}>{errors.time}</Text> : null}
+        </View>
+
+        <View style={styles.formField}>
+          <Text style={styles.label}>Activity:</Text>
+          <TextInput
+            style={styles.input}
+            value={activity}
+            onChangeText={setActivity}
+            placeholder="Activity Name"
+          />
+          {errors.activity ? <Text style={styles.errorText}>{errors.activity}</Text> : null}
+        </View>
+
+         {/* Basic Icon Selector */}
+         <View style={styles.formField}>
+            <Text style={styles.label}>Select Icon:</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconPickerScrollView}>
+                <View style={styles.iconPickerContainer}>
+                  {ICONS.map((iconName) => (
+                    <Pressable
+                      key={iconName}
+                      style={[
+                        styles.iconSwatch,
+                        icon === iconName && styles.selectedSwatch,
+                      ]}
+                      onPress={() => setIcon(iconName)}
+                    >
+                      <Icon name={iconName} size={30} color="#333" />
+                    </Pressable>
+                  ))}
+                </View>
+            </ScrollView>
+            {errors.icon ? <Text style={styles.errorText}>{errors.icon}</Text> : null}
+         </View>
+
+
+         {/* Basic Color Picker */}
+        <View style={styles.formField}>
+          <Text style={styles.label}>Select Color:</Text>
+          <View style={styles.colorPickerContainer}>
+            {COLORS.map((itemColor) => (
+              <Pressable
+                key={itemColor}
+                style={[
+                  styles.colorSwatch,
+                  { backgroundColor: itemColor },
+                  color === itemColor && styles.selectedSwatch,
+                ]}
+                onPress={() => setColor(itemColor)}
+              />
+            ))}
+          </View>
+          {errors.color ? <Text style={styles.errorText}>{errors.color}</Text> : null}
+        </View>
+
+
+        <AppButton
+          title={editingItemId ? 'Save Schedule Item' : 'Add Schedule Item'}
+          onPress={editingItemId ? handleSaveItem : handleAddItem}
+        />
+      </View>
+
+      <Text style={styles.subHeading}>Current Schedule</Text>
+      <FlatList
+        data={schedule}
+        renderItem={renderScheduleItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f8f8f8',
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  form: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    elevation: 2, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  formField: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    fontWeight: 'bold',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+  },
+   timeInputButton: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      padding: 10,
+      fontSize: 16,
+      justifyContent: 'center', // Center text vertically
+   },
+  colorPickerContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
+  },
+  colorSwatch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: 'transparent', // Default border color
+  },
+  selectedSwatch: {
+    borderColor: '#000', // Border for selected color
+  },
+  iconPickerScrollView: {
+      marginTop: 5,
+  },
+  iconPickerContainer: {
+      flexDirection: 'row',
+  },
+  iconSwatch: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent', // Default border color
+    backgroundColor: '#eee', // Light background for icons
+  },
+   selectedSwatch: {
+      borderColor: '#007BFF', // Border for selected icon
+   },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
+  },
+  subHeading: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  listContent: {
+    paddingBottom: 20, // Add padding to the bottom of the list
+  },
+  scheduleItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    elevation: 1, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
+  },
+  itemInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1, // Allow info to take available space
+  },
+  itemActions: {
+    flexDirection: 'row',
+    marginLeft: 10,
+  },
+  actionButton: {
+    marginLeft: 10,
+    padding: 5,
+    backgroundColor: '#eee',
+    borderRadius: 5,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    color: '#333',
+  },
+});
+
+export default ScheduleManagementScreen;
