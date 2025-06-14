@@ -1,4 +1,3 @@
-
 {
   "cli": {
     "version": ">= 3.0.0"
@@ -24,7 +23,9 @@
       "ios": {
         "resourceClass": "m1-medium"
       },
-      "android": {"buildType": "app-bundle"}
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   },
   "submit": {

@@ -1,4 +1,6 @@
 {
+  "name": "com.bb.mobile",
+  "displayName": "OT Skills Mobile",
   "expo": {
     "name": "OT Skills Mobile",
     "slug": "ot-skills-mobile",
@@ -10,7 +12,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.otskills.mobile",
+      "bundleIdentifier": "com.bb.mobile",
       "buildNumber": "1.0.0",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses camera for capturing images",
@@ -18,7 +20,7 @@
       }
     },
     "android": {
-      "package": "com.otskills.mobile",
+    
       "versionCode": 1,
       "permissions": [
         "CAMERA",

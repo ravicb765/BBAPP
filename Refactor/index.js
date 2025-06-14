@@ -8,6 +8,9 @@ import { SettingsProvider } from '/home/user/BBAPP/Refactor/src/context/Settings
 import AppNavigator from './src/navigation/AppNavigator';
 import { GameProvider } from '/home/user/BBAPP/Refactor/src/context/GameContext';
 import { openDatabase } from '/home/user/BBAPP/Refactor/src/database/database';
+import { AppRegistry } from 'react-native';
+import { name as appName } from './app.json';
+
 function App() {
   // In your Refactor/index.js (or wherever you call openDatabase)
 
@@ -30,16 +33,19 @@ useEffect(() => {
 
   return (
  <AuthProvider>
- <SettingsProvider>
- <MoodProvider>
- <GameProvider>
- <ScheduleProvider>
- <AppNavigator />
- </ScheduleProvider>
- </GameProvider>
- </MoodProvider>
+   <SettingsProvider>
+     <MoodProvider>
+       <GameProvider>
+         <ScheduleProvider>
+           <AppNavigator />
+         </ScheduleProvider>
+       </GameProvider>
+     </MoodProvider>
+   </SettingsProvider>
  </AuthProvider>
   );
 }
+
+AppRegistry.registerComponent(appName, () => App);
 
 export default App;
